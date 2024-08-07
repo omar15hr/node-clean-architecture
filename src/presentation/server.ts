@@ -10,7 +10,7 @@ export class Server {
   private readonly port: number;
   private readonly routes: Router;
 
-  constructor( options: Options ) {
+  constructor(options: Options) {
     const { port = 3100, routes } = options;
 
     this.port = port;
@@ -18,6 +18,9 @@ export class Server {
   }
 
   async start() {
+    // Middleware
+    this.app.use(express.json()); // json
+    this.app.use(express.urlencoded({ extended: true })); // x-www-form-urlencoded
 
     // Definición de rutas
     this.app.use(this.routes);
