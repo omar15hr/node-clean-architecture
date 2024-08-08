@@ -28,7 +28,7 @@ export class AuthDatasourceImpl implements AuthDatasource {
       });
 
       if (emailExists) {
-        throw CustomError.badRequest("Email already exists");
+        throw CustomError.badRequest("Email already exists"); // Debe ser un error genérico
       }
 
       // Hash password
