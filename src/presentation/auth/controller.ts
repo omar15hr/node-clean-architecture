@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { AuthRepository, CustomError, RegisterUserDto } from "../../domain";
 import { Jwt } from "../../config";
+import { PrismaClient } from "@prisma/client";
+import prisma from "../../lib/prisma";
 
 export class AuthController {
 
@@ -26,7 +28,7 @@ export class AuthController {
       .then( async(user) => {
         res.json({
           user, 
-          token: await Jwt.generateToken({email: user.email}),
+          token: await Jwt.generateToken({id: user.id}),
         })
       })
       .catch(error => this.handleError(error, res));
@@ -36,4 +38,16 @@ export class AuthController {
   loginUser = (req: Request, res: Response) => {
     res.json("loginUser controller");
   };
+
+  getUser = async(req: Request, res: Response) => {
+    try {
+      const users = await prisma.user.findMany();
+      res.json({
+        user: req.body.user,
+      });
+    } catch (error) {
+      this.handleError(error, res);
+    }
+  }
+
 }
