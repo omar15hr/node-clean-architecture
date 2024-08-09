@@ -1,8 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { CustomError, RegisterUserDto, UserEntity } from "../../../domain";
+import { CustomError, LoginUserDto, RegisterUserDto, UserEntity } from "../../../domain";
 import { AuthDatasource } from "../../../domain/datasources/auth/auth.datasouce";
 import { BcryptAdapter } from "../../../config";
 import { UserMapper } from "../../mappers/user.mapper";
+import prisma from "../../../lib/prisma";
 
 type HashFunction = (password: string) => string;
 type CompareFunction = (password: string, hashed: string) => boolean;
@@ -16,7 +17,6 @@ export class AuthDatasourceImpl implements AuthDatasource {
 
   async register(registerUserDto: RegisterUserDto): Promise<UserEntity> {
 
-    const prisma = await new PrismaClient();
     const { name, email, password } = registerUserDto;
 
     try {
@@ -49,6 +49,33 @@ export class AuthDatasourceImpl implements AuthDatasource {
       }
       throw CustomError.internalServer();
     }
+  }
+
+
+  async login( loginUserDto: LoginUserDto ): Promise<UserEntity> {
+    const { email, password } = loginUserDto;
+
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
+      
+      if ( !user ) throw CustomError.badRequest('User does not exists - email');
+
+      const isMatching = this.comparePassword(password, user.password);
+      if ( !isMatching ) throw CustomError.badRequest('Password is not valid');
+
+      return UserMapper.userEntityFromObject(user);
+
+
+    } catch (error) {
+      console.log(error); 
+      throw CustomError.internalServer();
+    }
+
+
   }
 
   
